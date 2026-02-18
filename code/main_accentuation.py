@@ -75,7 +75,7 @@ listCouleurs = ['r', 'g', 'b']
 sigma = [0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
 
 if VIDEO:
-    sigma = list(np.arange(0, 1.0, 0.1))
+    sigma = list(np.arange(0, 5.0, 0.01))
 
 images_1 = []
 images_2 = []
@@ -122,12 +122,12 @@ for j in sigma:
             else:
                 print(f"Erreur lors de la sauvegarde de l'image accentuée {img_name}_sigma_{j}.png.")
 
-        # Ajouter l'image accentuée à la liste pour l'affichage
-        if i == '1':
-            images_1.append(img_sharp_uft8)
-        
-        elif i == '2':
-            images_2.append(img_sharp_uft8)
+            # Ajouter l'image accentuée à la liste pour l'affichage
+            if i == '1':
+                images_1.append(img_sharp_uft8)
+            
+            elif i == '2':
+                images_2.append(img_sharp_uft8)
 
 
 # Code fait par ChatGPT pour afficher les images accentuées
