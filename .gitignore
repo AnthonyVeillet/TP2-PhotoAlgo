@@ -4,3 +4,5 @@ __pycache__/
 .ipynb_checkpoints/
 outputs/
 .DS_Store
+web/images/*.png
+web/images/video/*.png
