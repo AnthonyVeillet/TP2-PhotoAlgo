@@ -9,13 +9,42 @@ def norm_image(image_array):
 
 
 def translate_image(img, t, axis):
-    pad_width = [(0, 0), (0, 0)]
+    # Supporte 2D (H,W) et 3D (H,W,C)
+    if img.ndim == 2:
+        pad_width = [(0, 0), (0, 0)]
+    else:
+        pad_width = [(0, 0), (0, 0), (0, 0)]
+
     if t > 0:
         pad_width[axis] = (t, 0)
     else:
         pad_width[axis] = (0, -t)
+
     pad_width = tuple(pad_width)
     return np.pad(img, pad_width, mode='constant')
+
+
+def _get_hw(img):
+    # retourne (h, w) peu importe 2D ou 3D
+    return img.shape[0], img.shape[1]
+
+
+def _to_gray_for_display(img):
+    # Conversion minimale pour afficher en gris quand l'image est RGB/RGBA
+    if img.ndim == 2:
+        return img
+    rgb = img[:, :, :3].astype(np.float64)
+    return 0.2989 * rgb[:, :, 0] + 0.5870 * rgb[:, :, 1] + 0.1140 * rgb[:, :, 2]
+
+
+def _rescale_keep_channels(img, scale):
+    # Empêche skimage de redimensionner l’axe des canaux
+    if img.ndim == 2:
+        return sktr.rescale(img, scale)
+    try:
+        return sktr.rescale(img, scale, channel_axis=-1)
+    except TypeError:
+        return sktr.rescale(img, scale, multichannel=True)
 
 
 def align_images(img1, img2):
@@ -26,16 +55,17 @@ def align_images(img1, img2):
     #
 
     # get image sizes
-    h1, w1 = img1.shape
-    h2, w2 = img2.shape
+    h1, w1 = _get_hw(img1)
+    h2, w2 = _get_hw(img2)
 
     # gets two points from the user
     print('Select two points from each image define rotation, scale, translation')
-    plt.imshow(img1, cmap='gray')
+    plt.imshow(_to_gray_for_display(img1), cmap='gray')
     x1, y1 = tuple(zip(*plt.ginput(2)))
     plt.close()
     cx1, cy1 = np.mean(x1), np.mean(y1)
-    plt.imshow(img2, cmap='gray')
+
+    plt.imshow(_to_gray_for_display(img2), cmap='gray')
     x2, y2 = tuple(zip(*plt.ginput(2)))
     plt.close()
     cx2, cy2 = np.mean(x2), np.mean(y2)
@@ -45,6 +75,7 @@ def align_images(img1, img2):
     img1 = translate_image(img1, tx, axis=1)
     ty = int(np.round((h1 / 2 - cy1) * 2))
     img1 = translate_image(img1, ty, axis=0)
+
     tx = int(np.round((w2 / 2 - cx2) * 2))
     img2 = translate_image(img2, tx, axis=1)
     ty = int(np.round((h2 / 2 - cy2) * 2))
@@ -57,34 +88,36 @@ def align_images(img1, img2):
     dscale = len2 / len1
 
     if dscale < 1:
-        img1 = sktr.rescale(img1, dscale)
+        img1 = _rescale_keep_channels(img1, dscale)
     else:
-        img2 = sktr.rescale(img2, 1/dscale)
+        img2 = _rescale_keep_channels(img2, 1/dscale)
 
     # rotate im1 so that angle between points is the same
     theta1 = np.arctan2(-(y1[1]-y1[0]), x1[1]-x1[0])
     theta2 = np.arctan2(-(y2[1]-y2[0]), x2[1]-x2[0])
     dtheta = theta2-theta1
+
+    # skimage.rotate supporte les images multicanaux (H,W,C) directement
     img1 = sktr.rotate(img1, dtheta*180/np.pi, preserve_range='True')  # imrotate uses degree units
 
     # Crop images (on both sides of border) to be same height and width
-    h1, w1 = img1.shape
-    h2, w2 = img2.shape
+    h1, w1 = _get_hw(img1)
+    h2, w2 = _get_hw(img2)
 
     minw = min(w1, w2)
     brd = (max(w1, w2) - minw) / 2
 
     if minw == w1:
-        img2 = img2[:, int(np.ceil(brd)):-int(np.floor(brd))]
+        img2 = img2[:, int(np.ceil(brd)):-int(np.floor(brd)), ...] if img2.ndim == 3 else img2[:, int(np.ceil(brd)):-int(np.floor(brd))]
     else:
-        img1 = img1[:, int(np.ceil(brd)):-int(np.floor(brd))]
+        img1 = img1[:, int(np.ceil(brd)):-int(np.floor(brd)), ...] if img1.ndim == 3 else img1[:, int(np.ceil(brd)):-int(np.floor(brd))]
 
     minh = min(h1, h2)
     brd = (max(h1, h2) - minh) / 2
 
     if minh == h1:
-        img2 = img2[int(np.ceil(brd)):-int(np.floor(brd)), :]
+        img2 = img2[int(np.ceil(brd)):-int(np.floor(brd)), :, ...] if img2.ndim == 3 else img2[int(np.ceil(brd)):-int(np.floor(brd)), :]
     else:
-        img1 = img1[int(np.ceil(brd)):-int(np.floor(brd)), :]
+        img1 = img1[int(np.ceil(brd)):-int(np.floor(brd)), :, ...] if img1.ndim == 3 else img1[int(np.ceil(brd)):-int(np.floor(brd)), :]
 
     return img1, img2

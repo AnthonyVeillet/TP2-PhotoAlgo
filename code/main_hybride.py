@@ -57,10 +57,19 @@ def mettre_float01(img):
         x = x / 255.0
     return np.clip(x, 0.0, 1.0)
 
+def to_gray(img):
+    # Retourne une image 2D (gris) peu importe l'entrée (gris/RGB/RGBA)
+    if img.ndim == 2:
+        return img
+    rgb = img[:, :, :3].astype(np.float64)
+    # Luminance classique
+    return 0.2989 * rgb[:, :, 0] + 0.5870 * rgb[:, :, 1] + 0.1140 * rgb[:, :, 2]
+
 
 def fft_log_amplitude(imageGris):
-    # Amplitude log de la FFT2 (comme demandé)
-    g = mettre_float01(imageGris)
+    # Amplitude log de la FFT2
+    g = mettre_float01(to_gray(imageGris))
+
     return np.log(np.abs(np.fft.fftshift(np.fft.fft2(g))) + 1e-8)
 
 
@@ -81,17 +90,22 @@ def save_amplitude_image(imageGris, out_path):
 
 def main():
     # Aller cherhcher les images dans le dossier "code/hybrid_python"
-    img1_path = Path("code/hybrid_python/Albert_Einstein.png")
-    img2_path = Path("code/hybrid_python/Marilyn_Monroe.png")
+    #img1_path = Path("code/hybrid_python/Albert_Einstein.png")
+    #img2_path = Path("code/hybrid_python/Marilyn_Monroe.png")
+    #img1_path = Path("web/images/data/Capitaine.png")
+    #img2_path = Path("web/images/data/Thor.png")
+    img1_path = Path("web/images/data/Tony.png")
+    img2_path = Path("web/images/data/Pat.png")
 
     out_dir = Path("web/images/hybrid")
     out_amp_dir = Path("web/images/hybrid/amplitude")
     out_dir.mkdir(parents=True, exist_ok=True)
     out_amp_dir.mkdir(parents=True, exist_ok=True)
 
-    # Lecture des images (grayscale comme le starter)
-    im1 = imread(str(img1_path), pilmode="L")
-    im2 = imread(str(img2_path), pilmode="L")
+    # Lecture des images
+    im1 = imread(str(img1_path))
+    im2 = imread(str(img2_path))
+
 
     # Align une fois
     print("Alignement: clique 2 points sur l'image 1, puis 2 points sur l'image 2.")
@@ -116,8 +130,8 @@ def main():
     print("Saved FFT amplitudes for original images.")
 
     # Valeurs de cutoff
-    cutoff_lows = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
-    cutoff_highs = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+    cutoff_lows = [1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 15.0]
+    cutoff_highs = [1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 15.0]
 
     # Convertir une fois en float [0,1] pour filtres/FFT
     im1_f = mettre_float01(im1_cropped)
@@ -141,8 +155,9 @@ def main():
 
             # Recalcule low/high ici (pour sauvegarder leurs FFT)
             #    (comme dans l’article/énoncé: low = blur(img1), high = img2 - blur(img2))
-            low_img = skimage.filters.gaussian(im1_f, sigma=low)
-            high_img = im2_f - skimage.filters.gaussian(im2_f, sigma=high)
+            low_img = skimage.filters.gaussian(mettre_float01(to_gray(im1_cropped)), sigma=low)
+            high_img = mettre_float01(to_gray(im2_cropped)) - skimage.filters.gaussian(mettre_float01(to_gray(im2_cropped)), sigma=high)
+
 
             # Hybride float (pour FFT) = low + high
             hyb_f = np.clip(low_img + high_img, 0.0, 1.0)
