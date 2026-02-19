@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 DEBUG = False
 
 # Vérifier si on veut faire plein de png pour faire un vidéo dans Blender
-#VIDEO = False
-VIDEO = True
+VIDEO = False
+#VIDEO = True
 
 # Insérer les chemins vers les images
 img_1_path = pathlib.Path("web/images/Iris.png")
@@ -71,7 +71,7 @@ def accentuation(image, sigma):
 
 # Appliquer l'accentuation à chaque composante de couleur
 listNoms = ['1', '2']
-listCouleurs = ['r', 'g', 'b']
+#listCouleurs = ['r', 'g', 'b']
 sigma = [0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
 
 if VIDEO:
