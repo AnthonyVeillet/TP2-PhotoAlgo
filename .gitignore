@@ -5,5 +5,9 @@ __pycache__/
 .ipynb_checkpoints/
 outputs/
 .DS_Store
-web/images/*.png
-web/images/video/*.png
+
+# Ignore tous les PNG dans web/
+web/**/*.png
+
+# ... sauf ceux dans web/data/
+!web/data/**/*.png

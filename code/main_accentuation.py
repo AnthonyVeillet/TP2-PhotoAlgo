@@ -14,8 +14,8 @@ VIDEO = False
 #VIDEO = True
 
 # Insérer les chemins vers les images
-img_1_path = pathlib.Path("web/images/Iris.png")
-img_2_path = pathlib.Path("web/images/Optimus.png")
+img_1_path = pathlib.Path("web/images/data/Iris.png")
+img_2_path = pathlib.Path("web/images/data/Optimus.png")
 
 # Vérifier que les fichiers existent
 for p in (img_1_path, img_2_path):
@@ -107,15 +107,15 @@ for j in sigma:
 
         if VIDEO == True:
             # Sauvegarder l'image accentuée
-            skimage.io.imsave(f"web/images/video/{img_name}_sigma_{count}.png", img_sharp_uft8)
+            skimage.io.imsave(f"web/images/accentuation/video/{img_name}_sigma_{count}.png", img_sharp_uft8)
 
-            img_path = pathlib.Path(f"web/images/video/{img_name}_sigma_{count}.png")
+            img_path = pathlib.Path(f"web/images/accentuation/video/{img_name}_sigma_{count}.png")
 
         if VIDEO == False:
             # Sauvegarder l'image accentuée
-            skimage.io.imsave(f"web/images/{img_name}_sigma_{j}.png", img_sharp_uft8)
+            skimage.io.imsave(f"web/images/accentuation/{img_name}_sigma_{j}.png", img_sharp_uft8)
 
-            img_path = pathlib.Path(f"web/images/{img_name}_sigma_{j}.png")
+            img_path = pathlib.Path(f"web/images/accentuation/{img_name}_sigma_{j}.png")
 
             if img_path.exists():
                 print(f"Image accentuée {img_name}_sigma_{j}.png sauvegardée avec succès.")
@@ -167,12 +167,12 @@ def save_sigma_montage(images, sigmas, out_path, title=None):
 if VIDEO == False:
     save_sigma_montage(
         images_1, sigma,
-        f"web/images/montage_{img_1_name}.png",
+        f"web/images/accentuation/montage_{img_1_name}.png",
         title=img_1_name
     )
 
     save_sigma_montage(
         images_2, sigma,
-        f"web/images/montage_{img_2_name}.png",
+        f"web/images/accentuation/montage_{img_2_name}.png",
         title=img_2_name
     )

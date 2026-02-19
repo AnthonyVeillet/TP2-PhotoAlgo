@@ -3,8 +3,8 @@ import pathlib
 import numpy as np
 
 # Vérifier si on veux print dans le terminal des lignes de debug
-DEBUG = True
-#DEBUG = False
+#DEBUG = True
+DEBUG = False
 
 def hybrid_image(im1, im2, cutoff_low, cutoff_high):
     # you supply this code
